@@ -538,7 +538,10 @@ async function execute(argv) {
           const internalSrc = getMediaUrl(imageUrl);
           articleDetailXId[articleId] = Object.assign(
             articleDetailXId[articleId] || {},
-            { thumbnail: internalSrc },
+            {
+              thumbnail: internalSrc,
+              articleIndex,
+            },
           );
           fetchedThumbnails++;
           callback();
@@ -2204,11 +2207,10 @@ async function execute(argv) {
             '\n</head>'),
       );
 
-      const titles = Object.keys(articleDetailXId).sort();
+      const titles = Object.keys(articleDetailXId);
 
-      const {
+      let {
         articlesWithImages,
-        articlesWithoutImages,
       } = titles.reduce((acc, title) => {
         const articleDetail = articleDetailXId[title];
         if (articleDetail.thumbnail) {
@@ -2223,10 +2225,12 @@ async function execute(argv) {
         },
       );
 
+      articlesWithImages = articlesWithImages.sort((a, b) => a.articleIndex > b.articleIndex ? 1 : -1);
+
       const articlesWithImagesEl = articlesWithImages.map((article) => U.makeArticleImageTile(env, article)).join('\n');
       // const articlesWithoutImagesEl = articlesWithoutImages.map((article) => U.makeArticleListItem(env, article)).join('\n');
 
-      const dumpTitle = customZimTitle || (new URL(mwUrl)).host;
+      // const dumpTitle = customZimTitle || (new URL(mwUrl)).host;
 
       // doc.getElementById('title').textContent = dumpTitle;
       doc.getElementById('content').innerHTML = articlesWithImagesEl;
